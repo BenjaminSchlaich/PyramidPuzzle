@@ -1,3 +1,3 @@
-.vscode/
-.pp.dSYM/
+.vscode/**
+.pp.dSYM/**
 pp
