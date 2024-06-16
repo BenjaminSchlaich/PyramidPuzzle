@@ -52,22 +52,22 @@ class surface
     /// do a rotation only for the upper triangle
     void rotateRight(bool clockwise = true);
 
-    /// returns a vector of references to the upper four elements, in order
-    std::vector<color*> &getUpper();
+    /// set only the upper four elements, in order
+    void setUpper(unsigned int elements);
 
-    /// returns a vector of references to the left four elements, in order
-    std::vector<color*> &getLeft();
+    /// set only the left four elements, in order
+    void setLeft(unsigned int elements);
 
-    /// returns a vector of references to the right four elements, in order
-    std::vector<color*> &getRight();
+    /// set only the right four elements, in order
+    void setRight(unsigned int elements);
 
-    /// returns a reference to the vector to the colors
-    const std::vector<color> &getAll() const;
+    /// returns a reference to the the colors bitfield
+    unsigned int getColors() const;
 
     /// these return pointers to the corners of this surface
-    color *getTop();
-    color *getLeftest();
-    color *getRightest();
+    color getTop();
+    color getLeftest();
+    color getRightest();
 
     private:
 
@@ -77,9 +77,7 @@ class surface
      *            1 2 3
      *          4 5 6 7 8
      */
-    std::vector<color> elements;
-
-    std::vector<color*> upper, left, right;
+    unsigned int elements;
 };
 
 /**
