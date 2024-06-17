@@ -4,6 +4,16 @@
 
 #include <unordered_map>
 
+const color RED = 0;
+const color GREEN = 1;
+const color BLUE = 2;
+const color YELLOW = 3;
+
+const unsigned int ALLRED = 0;
+const unsigned int ALLGREEN = 0x155;
+const unsigned int ALLBLUE = 0x2aa;
+const unsigned int ALLYELLOW = 0x3ff;
+
 static const std::list<std::string> solvingMoves = {
     "turnLeft",
     "turnRight",
@@ -15,7 +25,7 @@ static const std::list<std::string> solvingMoves = {
     "rotateRightDown"
 };
 
-std::ostream &operator<<(std::ostream &os, const color &c)
+void printColor(std::ostream &os, const color &c)
 {
     switch(c)
     {
@@ -24,15 +34,15 @@ std::ostream &operator<<(std::ostream &os, const color &c)
         case BLUE:   os << 'b'; break;
         case YELLOW:   os << 'y'; break;
     }
-
-    return os;
 }
 
 std::ostream &operator<<(std::ostream &os, const pyramid &p)
 {
     os << std::endl << " LEFT" << std::endl;
 
-    auto &vl = p.getLeft()->getAll();
+    unsigned int vl = p.getLeft().getColors();
+
+    unsigned int mask = 0b11;
     
     for(int i=0; i<9; i++)
     {
@@ -43,12 +53,17 @@ std::ostream &operator<<(std::ostream &os, const pyramid &p)
         else if(i == 4)
             std::cout << std::endl;
         
-        os << vl.at(i);
+        int c = vl;
+        for(int j=i; j<8; j++)
+            c >>= 2;
+        c &= mask;
+
+        printColor(os, c);
     }
 
     os << std::endl << std::endl << " FRONT" << std::endl;
     
-    auto &vf = p.getFront()->getAll();
+    unsigned int vf = p.getFront().getColors();
     
     for(int i=0; i<9; i++)
     {
@@ -59,12 +74,17 @@ std::ostream &operator<<(std::ostream &os, const pyramid &p)
         else if(i == 4)
             std::cout << std::endl;
         
-        os << vf.at(i);
+        int c = vf;
+        for(int j=i; j<8; j++)
+            c >>= 2;
+        c &= mask;
+
+        printColor(os, c);
     }
 
     os << std::endl << std::endl << " RIGHT" << std::endl;
     
-    auto &vr = p.getRight()->getAll();
+    unsigned int vr = p.getRight().getColors();
     
     for(int i=0; i<9; i++)
     {
@@ -75,12 +95,17 @@ std::ostream &operator<<(std::ostream &os, const pyramid &p)
         else if(i == 4)
             std::cout << std::endl;
         
-        os << vr.at(i);
+        int c = vr;
+        for(int j=i; j<8; j++)
+            c >>= 2;
+        c &= mask;
+
+        printColor(os, c);
     }
 
     os << std::endl << std::endl << " BOTTOM" << std::endl;
     
-    auto &vb = p.getBottom()->getAll();
+    unsigned int vb = p.getBottom().getColors();
     
     for(int i=0; i<9; i++)
     {
@@ -91,61 +116,49 @@ std::ostream &operator<<(std::ostream &os, const pyramid &p)
         else if(i == 4)
             std::cout << std::endl;
         
-        os << vb.at(i);
+        int c = vb;
+        for(int j=i; j<8; j++)
+            c >>= 2;
+        c &= mask;
+
+        printColor(os, c);
     }
 
     return os;
 }
 
+bool operator==(const surface &s1, const surface &s2)
+{
+    return s1.equal(s2);
+}
+
 surface::surface(const surface &s)
 {
-    elements = std::vector(s.elements);
-
-    upper = std::vector<color*>();
-    upper.push_back(&elements.at(0));
-    upper.push_back(&elements.at(1));
-    upper.push_back(&elements.at(2));
-    upper.push_back(&elements.at(3));
-
-    left = std::vector<color*>();
-    left.push_back(&elements.at(1));
-    left.push_back(&elements.at(4));
-    left.push_back(&elements.at(5));
-    left.push_back(&elements.at(6));
-
-    right = std::vector<color*>();
-    right.push_back(&elements.at(3));
-    right.push_back(&elements.at(6));
-    right.push_back(&elements.at(7));
-    right.push_back(&elements.at(8));
+    elements = s.elements;
 }
 
 surface::surface(color c)
 {
-    elements = std::vector(9, c);
-
-    upper = std::vector<color*>();
-    upper.push_back(&elements.at(0));
-    upper.push_back(&elements.at(1));
-    upper.push_back(&elements.at(2));
-    upper.push_back(&elements.at(3));
-
-    left = std::vector<color*>();
-    left.push_back(&elements.at(1));
-    left.push_back(&elements.at(4));
-    left.push_back(&elements.at(5));
-    left.push_back(&elements.at(6));
-
-    right = std::vector<color*>();
-    right.push_back(&elements.at(3));
-    right.push_back(&elements.at(6));
-    right.push_back(&elements.at(7));
-    right.push_back(&elements.at(8));
+    switch(c)
+    {
+        case RED:
+            elements = ALLRED;
+            break;
+        case GREEN:
+            elements = ALLGREEN;
+            break;
+        case BLUE:
+            elements = ALLBLUE;
+            break;
+        case YELLOW:
+            elements = ALLYELLOW;
+            break;
+    }
 }
 
 surface::surface(std::string &s)
 {
-    elements = std::vector<color>(9);
+    elements = 0;
 
     int i = 0;
     int is = 0;
@@ -166,7 +179,12 @@ surface::surface(std::string &s)
                 if(i == 9)
                     throw std::runtime_error("surface::surface(string): more than 9 tiles in the input string: " + s);
 
-                elements.at(i) = elements.at(i-1);
+                // elements.at(i) = elements.at(i-1);
+                elements |= (0b11 & (elements >> 2));
+
+                if(i < 8)
+                    elements <<= 2;
+
                 i++;
             }
         }
@@ -175,16 +193,16 @@ surface::surface(std::string &s)
             switch(c)
             {
                 case 'r':
-                    elements.at(i++) = RED;
+                    elements |= RED;
                     break;
                 case 'g':
-                    elements.at(i++) = GREEN;
+                    elements |= GREEN;
                     break;
                 case 'b':
-                    elements.at(i++) = BLUE;
+                    elements |= BLUE;
                     break;
                 case 'y':
-                    elements.at(i++) = YELLOW;
+                    elements |= YELLOW;
                     break;
                 default:
                 {
@@ -193,29 +211,16 @@ surface::surface(std::string &s)
                     throw std::runtime_error(errmsg);
                 }
             }
+
+            i++;
         }
+
+        if(i < 9)
+            elements <<= 2;
     }
 
     if(i < 9)
         throw std::runtime_error("surface::surface(string): input string encodes less than 9 tiles: " + s);
-    
-    upper = std::vector<color*>();
-    upper.push_back(&elements.at(0));
-    upper.push_back(&elements.at(1));
-    upper.push_back(&elements.at(2));
-    upper.push_back(&elements.at(3));
-
-    left = std::vector<color*>();
-    left.push_back(&elements.at(1));
-    left.push_back(&elements.at(4));
-    left.push_back(&elements.at(5));
-    left.push_back(&elements.at(6));
-
-    right = std::vector<color*>();
-    right.push_back(&elements.at(3));
-    right.push_back(&elements.at(6));
-    right.push_back(&elements.at(7));
-    right.push_back(&elements.at(8));
 }
 
 bool surface::equal(const surface &s) const
@@ -225,159 +230,203 @@ bool surface::equal(const surface &s) const
 
 bool surface::isSolved() const
 {
-    for(const color &e: elements)
-        if(e != elements.front())
-            return false;
-    
-    return true;
+    return  elements == 0
+            || elements == ALLGREEN
+            || elements == ALLBLUE
+            || elements == ALLYELLOW;
 }
 
 bool surface::isSolvedButCorners() const
 {
-    for(int i=2; i<8; i++)
-    {
-        if(i == 4)
-            continue;
-        else if(elements.at(i) != elements.at(1))
-            return false;
-    }
+    unsigned int mask = 0b001111110011111100;
+    unsigned int mels = elements & mask;
 
-    return true;
+    return  mels == 0
+            || mels == (ALLGREEN & mask)
+            || mels == (ALLBLUE & mask)
+            || mels == (ALLYELLOW & mask);
 }
 
 void surface::rotateClockwise()
 {
-    // the corners
-    color c = elements.at(0);
-    elements.at(0) = elements.at(4);
-    elements.at(4) = elements.at(8);
-    elements.at(8) = c;
+    // code generated here for bit permutation: https://programming.sirrida.de/calcperm.php
+    // used the following mapping settings: MSB first, target bits: 1 0 11 10 3 2 5 4 17 16 13 12 15 14 7 6 9 8
+    unsigned int x = elements;
 
-    // now the edegs
-    c = elements.at(1);
-    elements.at(1) = elements.at(6);
-    elements.at(6) = elements.at(3);
-    elements.at(3) = c;
+    x = ((x & 0x0000000c) << 4)
+    | ((x & 0x000000c0) << 6)
+    | ((x & 0x00000303) << 8)
+    | ((x & 0x00000030) << 10)
+    | ((x & 0x00030000) >> 16)
+    | ((x & 0x00003000) >> 10)
+    | ((x & 0x00000c00) >> 6)
+    | ((x & 0x0000c000) >> 4);
 
-    // and now the inner tiles
-    c = elements.at(2);
-    elements.at(2) = elements.at(5);
-    elements.at(5) = elements.at(7);
-    elements.at(7) = c;
+    elements = x;
 }
 
 void surface::rotateCounterClockwise()
 {
-    rotateClockwise();
-    rotateClockwise();
+    // code generated here for bit permutation: https://programming.sirrida.de/calcperm.php
+    // used the following mapping settings: MSB first, source bits: 1 0 11 10 3 2 5 4 17 16 13 12 15 14 7 6 9 8
+    // (this is the same mapping as for clockwise, but with source instead of target bits!)
+    unsigned int x = elements;
+
+    x = ((x & 0x00000c00) << 4)
+    | ((x & 0x00000030) << 6)
+    | ((x & 0x0000000c) << 10)
+    | ((x & 0x00000003) << 16)
+    | ((x & 0x0000c000) >> 10)
+    | ((x & 0x00030300) >> 8)
+    | ((x & 0x00003000) >> 6)
+    | ((x & 0x000000c0) >> 4);
+
+    elements = x;
 }
 
 void surface::rotateUpper(bool clockwise)
 {
-    color c = *upper.at(0);
+    unsigned int x = elements;
 
+    // code generated here for bit permutation: https://programming.sirrida.de/calcperm.php
     if(clockwise)
     {
-        *upper.at(0) = *upper.at(1);
-        *upper.at(1) = *upper.at(3);
-        *upper.at(3) = c;
+        // MSB first, target bits: 11 10 17 16 13 12 15 14 9 8 7 6 5 4 3 2 1 0
+        x = (x & 0x000033ff)
+        | ((x & 0x0000c000) << 2)
+        | ((x & 0x00000c00) << 4)
+        | ((x & 0x00030000) >> 6);
     }
     else
     {
-        *upper.at(0) = *upper.at(3);
-        *upper.at(3) = *upper.at(1);
-        *upper.at(1) = c;
+        // MSB first, source bits: 11 10 17 16 13 12 15 14 9 8 7 6 5 4 3 2 1 0
+        x = (x & 0x000033ff)
+        | ((x & 0x00000c00) << 6)
+        | ((x & 0x0000c000) >> 4)
+        | ((x & 0x00030000) >> 2);
     }
+
+    elements = x;
 }
 
 void surface::rotateLeft(bool clockwise)
 {
-    color c = *left.at(0);
+    unsigned int x = elements;
 
+    // code generated here for bit permutation: https://programming.sirrida.de/calcperm.php
     if(clockwise)
     {
-        *left.at(0) = *left.at(1);
-        *left.at(1) = *left.at(3);
-        *left.at(3) = c;
+        // MSB first, target bits: 17 16 5 4 13 12 11 10 15 14 7 6 9 8 3 2 1 0
+        x = (x & 0x00033ccf)
+        | ((x & 0x00000030) << 4)
+        | ((x & 0x00000300) << 6)
+        | ((x & 0x0000c000) >> 10);
     }
     else
     {
-        *left.at(0) = *left.at(3);
-        *left.at(3) = *left.at(1);
-        *left.at(1) = c;
+        // MSB first, source bits: 17 16 5 4 13 12 11 10 15 14 7 6 9 8 3 2 1 0
+        x = (x & 0x00033ccf)
+        | ((x & 0x00000030) << 10)
+        | ((x & 0x0000c000) >> 6)
+        | ((x & 0x00000300) >> 4);
     }
+
+    elements = x;
 }
 
 void surface::rotateRight(bool clockwise)
 {
-    color c = *right.at(0);
+    unsigned int x = elements;
 
+    // code generated here for bit permutation: https://programming.sirrida.de/calcperm.php
     if(clockwise)
     {
-        *right.at(0) = *right.at(1);
-        *right.at(1) = *right.at(3);
-        *right.at(3) = c;
+        // MSB first, target bits: 17 16 15 14 13 12 1 0 9 8 7 6 11 10 3 2 5 4
+        x = (x & 0x0003f3cc)
+        | ((x & 0x00000003) << 4)
+        | ((x & 0x00000030) << 6)
+        | ((x & 0x00000c00) >> 10);
     }
     else
     {
-        *right.at(0) = *right.at(3);
-        *right.at(3) = *right.at(1);
-        *right.at(1) = c;
+        // MSB first, source bits: 17 16 15 14 13 12 1 0 9 8 7 6 11 10 3 2 5 4
+        x = (x & 0x0003f3cc)
+        | ((x & 0x00000003) << 10)
+        | ((x & 0x00000c00) >> 6)
+        | ((x & 0x00000030) >> 4);
     }
+
+    elements = x;
 }
 
-std::vector<color*> &surface::getUpper()
+void surface::setByMask(unsigned int mask, unsigned int selection)
 {
-    return upper;
+    this->elements &= ~mask;                    // unset all masked elements
+    this->elements |= (mask & selection);        // reset the masked and selected elements
 }
 
-std::vector<color*> &surface::getLeft()
+void surface::setUpper(unsigned int elements)
 {
-    return left;
+    setByMask(0b111111110000000000, elements);
 }
 
-std::vector<color*> &surface::getRight()
+void surface::setLeft(unsigned int elements)
 {
-    return right;
+    setByMask(0b001100001111110000, elements);
 }
 
-const std::vector<color> &surface::getAll() const
+void surface::setRight(unsigned int elements)
+{
+    setByMask(0b000000110000111111, elements);
+}
+
+unsigned int surface::getColors() const
 {
     return elements;
 }
 
-color *surface::getTop()
+color surface::getTop() const
 {
-    return &elements.at(0);
+    return elements >> 16;
 }
 
-color *surface::getLeftest()
+color surface::getRightest() const
 {
-    return &elements.at(4);
+    return elements & 0b11;
 }
 
-color *surface::getRightest()
+color surface::getLeftest() const
 {
-    return &elements.at(8);
+    return (elements >> 8) & 0b11;
 }
 
-pyramid::pyramid(const pyramid &p)
+void surface::setTop(color c)
 {
-    front = new surface(*p.front);
-    left = new surface(*p.left);
-    right = new surface(*p.right);
-    bottom = new surface(*p.bottom);
+    setByMask(0b110000000000000000, c << 16);
 }
 
-pyramid::pyramid(color frontColor, color leftColor, color rightColor, color bottColor)
+void surface::setLeftest(color c)
 {
-    front = new surface(frontColor);
-    left = new surface(leftColor);
-    right = new surface(rightColor);
-    bottom = new surface(bottColor);
+    setByMask(0b000000001100000000, c << 16);
 }
 
-pyramid::pyramid(std::string s)
+void surface::setRightest(color c)
+{
+    setByMask(0b000000000000000011, c << 16);
+}
+
+pyramid::pyramid(const pyramid &p) : front(p.front), left(p.left), right(p.right), bottom(p.bottom)
+{
+    
+}
+
+pyramid::pyramid(color frontColor, color leftColor, color rightColor, color bottColor) :
+front(surface(frontColor)), left(surface(leftColor)), right(surface(rightColor)), bottom(surface(bottColor))
+{
+    
+}
+
+pyramid::pyramid(std::string s) : front(0), right(0), left(0), bottom(0)
 {
     char delimiter = ',';
 
@@ -402,62 +451,56 @@ pyramid::pyramid(std::string s)
     if(t != 4)
         throw std::runtime_error("pyramid::pyramid(std::string): illegal input string has less than 4 surfaces.");
 
-    front = new surface(tokens[0]);
-    right = new surface(tokens[1]);
-    left = new surface(tokens[2]);
-    bottom = new surface(tokens[3]);
+    front = surface(tokens[0]);
+    right = surface(tokens[1]);
+    left = surface(tokens[2]);
+    bottom = surface(tokens[3]);
 }
 
 bool pyramid::equal(const pyramid &p) const
 {
-    if(!p.bottom->equal(*bottom)
-    || !p.front->equal(*front)
-    || !p.left->equal(*left)
-    || !p.right->equal(*right))
-        return false;
-    else
-        return true;
+    return p.bottom == bottom && p.front == front && p.left == left && p.right == right;
 }
 
 bool pyramid::isSolved() const
 {
-    return front->isSolved() && right->isSolved() && left->isSolved() && bottom->isSolved();
+    return front.isSolved() && right.isSolved() && left.isSolved() && bottom.isSolved();
 }
 
 bool pyramid::isSolvedButCorners() const
 {
-    return front->isSolvedButCorners() && right->isSolvedButCorners()
-            && left->isSolvedButCorners() && bottom->isSolvedButCorners();
+    return front.isSolvedButCorners() && right.isSolvedButCorners()
+            && left.isSolvedButCorners() && bottom.isSolvedButCorners();
 }
 
-const surface *pyramid::getFront() const
+surface pyramid::getFront() const
 {
     return front;
 }
 
-const surface *pyramid::getRight() const
+surface pyramid::getRight() const
 {
     return right;
 }
 
-const surface *pyramid::getLeft() const
+surface pyramid::getLeft() const
 {
     return left;
 }
 
-const surface *pyramid::getBottom() const
+surface pyramid::getBottom() const
 {
     return bottom;
 }
 
 void pyramid::turnLeft()
 {
-    surface *s = front;
+    surface s = front;
     front = right;
     right = left;
     left = s;
 
-    bottom->rotateCounterClockwise();
+    bottom.rotateCounterClockwise();
 }
 
 void pyramid::turnRight()
@@ -468,11 +511,11 @@ void pyramid::turnRight()
 
 void pyramid::rotateRightCornerUp()
 {
-    front->rotateCounterClockwise();
-    right->rotateClockwise();
-    bottom->rotateClockwise();
+    front.rotateCounterClockwise();
+    right.rotateClockwise();
+    bottom.rotateClockwise();
 
-    surface *s = front;
+    surface s = front;
     front = bottom;
     bottom = left;
     left = s;
@@ -486,17 +529,10 @@ void pyramid::rotateRightCornerDown()
 
 void pyramid::rotateUpperRight()
 {
-    auto itf = front->getUpper().begin();
-    auto itl = left->getUpper().begin();
-    auto itr = right->getUpper().begin();
-
-    while(itf != front->getUpper().end())
-    {
-        color c = **itf;
-        **itf++ = **itl;
-        **itl++ = **itr;
-        **itr++ = c;
-    }
+    surface s(front);
+    front.setUpper(left.getColors());
+    left.setUpper(right.getColors());
+    right.setUpper(s.getColors());
 }
 
 void pyramid::rotateUpperLeft()
@@ -507,21 +543,16 @@ void pyramid::rotateUpperLeft()
 
 void pyramid::rotateRightUp()
 {
-    auto itf = front->getRight().begin();
-    auto itb = bottom->getLeft().begin();
-    auto itr = right->getLeft().begin();
+    surface s(front);
 
-    while(itf != front->getRight().end())
-    {
-        color c = **itf;
-        **itf++ = **itb;
-        **itb++ = **itr;
-        **itr++ = c;
-    }
+    bottom.rotateCounterClockwise();
+    front.setRight(bottom.getColors());
+    bottom.rotateClockwise();
+    
+    bottom.setLeft(right.getColors());
 
-    // internal rotations
-    front->rotateRight(false);
-    right->rotateLeft();
+    s.rotateClockwise();
+    right.setLeft(s.getColors());
 }
 
 void pyramid::rotateRightDown()
@@ -532,10 +563,10 @@ void pyramid::rotateRightDown()
 
 void pyramid::rotateRightestUp()
 {
-    color c = *front->getRightest();
-    *front->getRightest() = *bottom->getLeftest();
-    *bottom->getLeftest() = *right->getLeftest();
-    *right->getLeftest() = c;
+    color c = front.getRightest();
+    front.setRightest(bottom.getLeftest());
+    bottom.setLeftest(right.getLeftest());
+    right.setLeftest(c);
 }
 
 void pyramid::rotateRightestDown()
@@ -546,10 +577,10 @@ void pyramid::rotateRightestDown()
 
 void pyramid::rotateTopRight()
 {
-    color c = *front->getTop();
-    *front->getTop() = *left->getTop();
-    *left->getTop() = *right->getTop();
-    *right->getTop() = c;
+    surface s(front);
+    front.setTop(left.getColors());
+    left.setTop(right.getColors());
+    right.setTop(s.getColors());
 }
 
 void pyramid::rotateTopLeft()
@@ -603,10 +634,7 @@ bool solve(pyramid &start, std::list<std::string> &moves)
         // now we just might to solve the corners yet:
         if(!end->isSolved())
         {
-            if(end->getFront()->getAll().at(0) != end->getFront()->getAll().at(1))
-            {
-
-            }
+            moves.push_front("Solve the corners");
         }
 
         pyramid *p = end;

@@ -8,7 +8,13 @@ using namespace std;
 
 int main()
 {
-    runAllTests();
+    pyramid p("b9,g9,y9,r9");
+
+    cout << p << endl;
+
+    // runAllTests();
+
+    /*
 
     cout << endl << endl;
 
@@ -25,7 +31,7 @@ int main()
             std::cout << move << std::endl;
     }
     else
-        cout << "The puzzle could not be solved." << endl;
+        cout << "The puzzle could not be solved." << endl;//*/
 
     return 0;
 }

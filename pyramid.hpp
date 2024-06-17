@@ -5,15 +5,25 @@
 #include <iostream>
 #include <list>
 
-enum color {RED, GREEN, BLUE, YELLOW};
+typedef unsigned int color;
+
+extern const color RED;
+extern const color GREEN;
+extern const color BLUE;
+extern const color YELLOW;
 
 /// print a color in just one letter
-std::ostream &operator<<(std::ostream &os, const color &c);
+void printColor(std::ostream &os, const color &c);
 
 class pyramid;
 
 /// print a pyramid in an understandable manner
 std::ostream &operator<<(std::ostream &os, const pyramid &p);
+
+class surface;
+
+/// equivalent to surface::equal(surface)
+bool operator==(const surface &s1, const surface &s2);
 
 class surface   
 {
@@ -64,12 +74,20 @@ class surface
     /// returns a reference to the the colors bitfield
     unsigned int getColors() const;
 
+    /// returns the color of the according edge
+    color getTop() const;
+    color getRightest() const;
+    color getLeftest() const;
+
     /// these return pointers to the corners of this surface
-    color getTop();
-    color getLeftest();
-    color getRightest();
+    void setTop(color c);
+    void setLeftest(color c);
+    void setRightest(color c);
 
     private:
+
+    /// sets the masked section of the <elements> to the masked part of <selection>
+    void setByMask(unsigned int mask, unsigned int selection);
 
     /**
      * The contents of this surface, ordered in the following way:
@@ -169,23 +187,23 @@ class pyramid
 
     void rotateTopLeft();
 
-    const surface *getFront() const;
+    surface getFront() const;
 
-    const surface *getRight() const;
+    surface getRight() const;
 
-    const surface *getLeft() const;
+    surface getLeft() const;
 
-    const surface *getBottom() const;
+    surface getBottom() const;
 
     private:
 
-    surface *front;
+    surface front;
 
-    surface *left;
+    surface left;
 
-    surface *right;
+    surface right;
 
-    surface *bottom;
+    surface bottom;
 };
 
 bool solve(pyramid &p, std::list<std::string> &moves);
