@@ -1,0 +1,5 @@
+
+IDEAS FOR SPEEDING UP THE SOLVING PROCESS:
+    - use constant numbers and a switch jump table for executing all operations instead of strings and ifs.
+    - implement proper partial rotations instead of forward-backward turning (in rotateRightUp() etc.)
+    - don't execute opposite operations one after another

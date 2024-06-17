@@ -8,8 +8,9 @@ using namespace std;
 
 int main()
 {
-    // runAllTests();
-    
+    /*
+    runAllTests();
+    /*/
     // pyramid p("yggrbrgry,byybrgyyr,grbbybygr,bgrbgyrbg");
     pyramid p("rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by");
     // pyramid p("yryg3y3,brbbr5,g3y4bb,b4g3rr");

@@ -510,8 +510,12 @@ void pyramid::turnLeft()
 
 void pyramid::turnRight()
 {
-    turnLeft();
-    turnLeft();
+    surface s = front;
+    front = left;
+    left = right;
+    right = s;
+
+    bottom.rotateClockwise();
 }
 
 void pyramid::rotateRightCornerUp()
@@ -528,8 +532,14 @@ void pyramid::rotateRightCornerUp()
 
 void pyramid::rotateRightCornerDown()
 {
-    rotateRightCornerUp();
-    rotateRightCornerUp();
+    front.rotateCounterClockwise();
+    right.rotateCounterClockwise();
+    left.rotateClockwise();
+
+    surface s = front;
+    front = left;
+    left = bottom;
+    bottom = s;
 }
 
 void pyramid::rotateUpperRight()
@@ -542,8 +552,10 @@ void pyramid::rotateUpperRight()
 
 void pyramid::rotateUpperLeft()
 {
-    rotateUpperRight();
-    rotateUpperRight();
+    surface s(front);
+    front.setUpper(right.getColors());
+    right.setUpper(left.getColors());
+    left.setUpper(s.getColors());
 }
 
 void pyramid::rotateRightUp()
@@ -562,8 +574,16 @@ void pyramid::rotateRightUp()
 
 void pyramid::rotateRightDown()
 {
-    rotateRightUp();
-    rotateRightUp();
+    surface s(front);
+
+    right.rotateCounterClockwise();
+    front.setRight(right.getColors());
+    right.rotateClockwise();
+
+    right.setLeft(bottom.getColors());
+
+    s.rotateClockwise();
+    bottom.setLeft(s.getColors());
 }
 
 void pyramid::rotateRightestUp()
@@ -576,8 +596,10 @@ void pyramid::rotateRightestUp()
 
 void pyramid::rotateRightestDown()
 {
-    rotateRightestUp();
-    rotateRightestUp();
+    color c = front.getRightest();
+    front.setRightest(right.getLeftest());
+    right.setLeftest(bottom.getLeftest());
+    bottom.setLeftest(c);
 }
 
 void pyramid::rotateTopRight()
@@ -590,8 +612,10 @@ void pyramid::rotateTopRight()
 
 void pyramid::rotateTopLeft()
 {
-    rotateTopRight();
-    rotateTopRight();
+    surface s(front);
+    front.setTop(right.getTop());
+    right.setTop(left.getTop());
+    left.setTop(s.getTop());
 }
 
 bool solve(pyramid &start, std::list<std::string> &moves)
