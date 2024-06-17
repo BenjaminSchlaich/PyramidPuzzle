@@ -103,12 +103,16 @@ class surface
     unsigned int elements;
 };
 
+class hashPyramid;
+
 /**
  * Represents a magic pyramid from the following perspective:
  * The pyramid stands on the bottom surface, with one surface in the front, and two towards the left and right back.
  */
 class pyramid
 {
+    friend class hashPyramid;
+
     public:
 
     /// explicit copy constructor, that duplicates all memory from pointers too
@@ -134,6 +138,9 @@ class pyramid
 
     /// checks whether all faces are equal
     bool equal(const pyramid &p) const;
+
+    /// default equality should also work?
+    bool operator==(const pyramid&) const = default;
 
     /// checks if the cube is in some position where all faces have one color only
     bool isSolved() const;
@@ -226,3 +233,14 @@ bool solve(pyramid &p, std::list<Operation> &moves);
 void executeOperation(pyramid &p, Operation op);
 
 std::string operationToString(const Operation &op);
+
+/// hash a pyramid into a set or map of a standard container:
+struct hashPyramid
+{
+    size_t operator()(const pyramid& p) const noexcept
+    {
+        unsigned long l = (p.left.getColors() ^ p.right.getColors()) << 31;
+        unsigned long r = p.front.getColors() ^ p.bottom.getColors();
+        return l | r;
+    }
+};

@@ -641,7 +641,7 @@ bool solve(pyramid &start, std::list<Operation> &moves)
         q.pop_front();
 
         Operation lastOpReversed = reverseOp(pred.at(p).second);
-
+        
         // generate all neighbors
         for(auto &op: solvingMoves)
         {
