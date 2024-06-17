@@ -14,15 +14,19 @@ const unsigned int ALLGREEN = 0x15555;
 const unsigned int ALLBLUE = 0x2aaaa;
 const unsigned int ALLYELLOW = 0x3ffff;
 
-static const std::list<std::string> solvingMoves = {
-    "turnLeft",
-    "turnRight",
-    "rotateRightCornerUp",
-    "rotateRightCornerDown",
-    "rotateUpperRight",
-    "rotateUpperLeft",
-    "rotateRightUp",
-    "rotateRightDown"
+// because we want to avoid the reversed operations when solving one after another
+Operation reverseOp(const Operation &op);
+
+// use these moves in the process of solving
+static const std::list<Operation> solvingMoves = {
+    OP_TURN_LEFT,
+    OP_TURN_RIGHT,
+    OP_RIGHT_CORNER_UP,
+    OP_RIGHT_CORNER_DOWN,
+    OP_UPPER_RIGHT,
+    OP_UPPER_LEFT,
+    OP_RIGHT_UP,
+    OP_RIGHT_DOWN
 };
 
 void printColor(std::ostream &os, const color &c)
@@ -618,14 +622,14 @@ void pyramid::rotateTopLeft()
     left.setTop(s.getTop());
 }
 
-bool solve(pyramid &start, std::list<std::string> &moves)
+bool solve(pyramid &start, std::list<Operation> &moves)
 {
     if(start.isSolved())
         return true;
 
     std::list<pyramid> data = {start};
 
-    std::unordered_map<const pyramid*, std::pair<pyramid*, const std::string*>> pred = {{&data.front(), {nullptr, nullptr}}};
+    std::unordered_map<const pyramid*, std::pair<pyramid*, Operation>> pred = {{&data.front(), {nullptr, OP_NOOP}}};
     
     std::list<pyramid*> q = {&data.front()};
 
@@ -636,9 +640,14 @@ bool solve(pyramid &start, std::list<std::string> &moves)
         pyramid *p = q.front();
         q.pop_front();
 
+        Operation lastOpReversed = reverseOp(pred.at(p).second);
+
         // generate all neighbors
         for(auto &op: solvingMoves)
         {
+            if(op == lastOpReversed)            // this would be very counter-productive.
+                continue;
+
             data.push_back(pyramid(*p));
             pyramid *pp = &data.back();
 
@@ -646,7 +655,7 @@ bool solve(pyramid &start, std::list<std::string> &moves)
 
             if(!pred.contains(pp))
             {
-                pred.insert({pp, {p, &op}});
+                pred.insert({pp, {p, op}});
                 q.push_back(pp);
             }
 
@@ -660,12 +669,6 @@ bool solve(pyramid &start, std::list<std::string> &moves)
 
     if(end != nullptr)
     {
-        // now we just might to solve the corners yet:
-        if(!end->isSolved())
-        {
-            moves.push_front("Solve the corners");
-        }
-
         pyramid *p = end;
 
         while(true)
@@ -674,7 +677,7 @@ bool solve(pyramid &start, std::list<std::string> &moves)
             p = pnext.first;
 
             if(p != nullptr)
-                moves.push_front(*pnext.second);
+                moves.push_front(pnext.second);
             else
                 break;
         }
@@ -685,36 +688,145 @@ bool solve(pyramid &start, std::list<std::string> &moves)
         return false;
 }
 
-void executeOperation(pyramid &p, const std::string &op)
+void executeOperation(pyramid &p, Operation op)
 {
-    if(op == "turnLeft")
-        p.turnLeft();
-    else if(op == "turnRight")
-        p.turnRight();
-    else if(op == "rotateRightCornerUp")
-        p.rotateRightCornerUp();
-    else if(op == "rotateRightCornerDown")
-        p.rotateRightCornerDown();
-    else if(op == "rotateUpperRight")
-        p.rotateUpperRight();
-    else if(op == "rotateUpperLeft")
-        p.rotateUpperLeft();
-    else if(op == "rotateRightUp")
-        p.rotateRightUp();
-    else if(op == "rotateRightDown")
-        p.rotateRightDown();
-    else if(op == "rotateRightestUp")
-        p.rotateRightestUp();
-    else if(op == "rotateRightestDown")
-        p.rotateRightestDown();
-    else if(op == "rotateTopRight")
-        p.rotateTopRight();
-    else if(op == "rotateTopLeft")
-        p.rotateTopLeft();
-    else
-        throw std::runtime_error("executeOperation(): unknown operation " + op);
+    switch(op)
+    {
+        case OP_TURN_LEFT:
+            p.turnLeft();
+            break;
+        case OP_TURN_RIGHT:
+            p.turnRight();
+            break;
+        case OP_RIGHT_CORNER_UP:
+            p.rotateRightCornerUp();
+            break;
+        case OP_RIGHT_CORNER_DOWN:
+            p.rotateRightCornerDown();
+            break;
+        case OP_UPPER_RIGHT:
+            p.rotateUpperRight();
+            break;
+        case OP_UPPER_LEFT:
+            p.rotateUpperLeft();
+            break;
+        case OP_RIGHT_UP:
+            p.rotateRightUp();
+            break;
+        case OP_RIGHT_DOWN:
+            p.rotateRightDown();
+            break;
+        case OP_RIGHTEST_UP:
+            p.rotateRightestUp();
+            break;
+        case OP_RIGHTEST_DOWN:
+            p.rotateRightestDown();
+            break;
+        case OP_TOP_LEFT:
+            p.rotateTopLeft();
+            break;
+        case OP_TOP_RIGHT:
+            p.rotateTopRight();
+            break;
+        default:
+            throw std::runtime_error("executeOperation(): unknown operation " + std::to_string(op));
+    }   
     
     #if DEBUG
     std::cout << "Executed operation: " << op << "()." << std::endl;
     #endif
+}
+
+std::string operationToString(const Operation &op)
+{
+    switch(op)
+    {
+        case OP_TURN_LEFT:
+            return "Turn the whole pyramid left.";
+            break;
+        case OP_TURN_RIGHT:
+            return "Turn the whole pyramid right.";
+            break;
+        case OP_RIGHT_CORNER_UP:
+            return "Turn the right corner upwards.";
+            break;
+        case OP_RIGHT_CORNER_DOWN:
+            return "Turn the right corner downwards.";
+            break;
+        case OP_UPPER_RIGHT:
+            return "Rotate the upper section towards the right.";
+            break;
+        case OP_UPPER_LEFT:
+            return "Rotate the upper section towards the left.";
+            break;
+        case OP_RIGHT_UP:
+            return "Rotate the right section upwards.";
+            break;
+        case OP_RIGHT_DOWN:
+            return "Rotate the right section downwards.";
+            break;
+        case OP_RIGHTEST_UP:
+            return "Rotate the right corner upwards.";
+            break;
+        case OP_RIGHTEST_DOWN:
+            return "Rotate the right corner downwards.";
+            break;
+        case OP_TOP_LEFT:
+            return "Rotate the top corner left.";
+            break;
+        case OP_TOP_RIGHT:
+            return "Rotate the top corner right.";
+            break;
+        case OP_NOOP:
+            return "Don't do anything.";
+        default:
+            throw std::runtime_error("executeOperation(): unknown operation " + std::to_string(op));
+    }
+}
+
+Operation reverseOp(const Operation &op)
+{
+    switch(op)
+    {
+        case OP_TURN_LEFT:
+            return OP_TURN_RIGHT;
+            break;
+        case OP_TURN_RIGHT:
+            return OP_TURN_LEFT;
+            break;
+        case OP_RIGHT_CORNER_UP:
+            return OP_RIGHT_CORNER_DOWN;
+            break;
+        case OP_RIGHT_CORNER_DOWN:
+            return OP_RIGHT_CORNER_UP;
+            break;
+        case OP_UPPER_RIGHT:
+            return OP_UPPER_LEFT;
+            break;
+        case OP_UPPER_LEFT:
+            return OP_UPPER_RIGHT;
+            break;
+        case OP_RIGHT_UP:
+            return OP_RIGHT_DOWN;
+            break;
+        case OP_RIGHT_DOWN:
+            return OP_RIGHT_UP;
+            break;
+        case OP_RIGHTEST_UP:
+            return OP_RIGHTEST_DOWN;
+            break;
+        case OP_RIGHTEST_DOWN:
+            return OP_RIGHTEST_UP;
+            break;
+        case OP_TOP_LEFT:
+            return OP_TOP_RIGHT;
+            break;
+        case OP_TOP_RIGHT:
+            return OP_TOP_LEFT;
+            break;
+        case OP_NOOP:
+            return OP_NOOP;
+        default:
+            throw std::runtime_error("executeOperation(): unknown operation " + std::to_string(op));
+    }
 }

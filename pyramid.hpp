@@ -12,6 +12,11 @@ extern const color GREEN;
 extern const color BLUE;
 extern const color YELLOW;
 
+/// @brief These are the operations that can be executed
+enum Operation {OP_NOOP, OP_TURN_LEFT, OP_TURN_RIGHT, OP_RIGHT_CORNER_UP, OP_RIGHT_CORNER_DOWN,
+                OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_RIGHTEST_UP, OP_RIGHTEST_DOWN,
+                OP_TOP_RIGHT, OP_TOP_LEFT};
+
 /// print a color in just one letter
 void printColor(std::ostream &os, const color &c);
 
@@ -150,7 +155,8 @@ class pyramid
 
     /**
      * Rotate the right corner up to the top, while keeping the left corner "fixed".
-     * I.e. rotate the pyramid along the axis that goes through the left corner and the center of the right surface.
+     * I.e. rotate the pyramid along the axis that goes through the left corner and the center of the right surface
+     * in counter-clockwise direction, when seen from the left corner.
      */
     void rotateRightCornerUp();
 
@@ -165,12 +171,21 @@ class pyramid
     void rotateLeftCornerDown();
     */
 
+    // rotate the upper four elements towards the right (from above this is a counter-clockwise rotation)
     void rotateUpperRight();
 
+    // rotate the upper four elements towards the left (from above this is a clockwise rotation)
     void rotateUpperLeft();
 
+    /// rotate the four elements on the lower-right part upwards, i.e.
+    /// rotate them clockwise seen from the right corner along the axis formed by the
+    /// right corner and the center of the left surface.
     void rotateRightUp();
 
+    /** rotate the four elements on the lower-right part downwards, i.e.
+     * rotate them counter-clockwise seen from the right corner along the axis formed by the
+     * right corner and the center of the left surface.
+     */
     void rotateRightDown();
 
     /*
@@ -206,22 +221,8 @@ class pyramid
     surface bottom;
 };
 
-bool solve(pyramid &p, std::list<std::string> &moves);
+bool solve(pyramid &p, std::list<Operation> &moves);
 
-/**
- *  executes the operation defined by <op> on <p>.
- *  Valid operation strings are:
- *  turnLeft
- *  turnRight
- *  rotateRightCornerUp
- *  rotateRightCornerDown
- *  rotateUpperRight
- *  rotateUpperLeft
- *  rotateRightUp
- *  rotateRightDown
- *  rotateRightestUp
- *  rotateRightestDown
- *  rotateTopRight
- *  rotateTopLeft
- * */
-void executeOperation(pyramid &p, const std::string &op);
+void executeOperation(pyramid &p, Operation op);
+
+std::string operationToString(const Operation &op);

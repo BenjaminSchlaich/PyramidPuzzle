@@ -3,10 +3,10 @@
 #include "testpyramid.hpp"
 
 
-static const std::list<std::pair<std::list<std::string>,std::list<std::string>>> testCases = {
+static const std::list<std::pair<std::list<std::string>,std::list<Operation>>> testCases = {
     {
         {"b9,g9,y9,r9","g9,y9,b9,r9","r9,y9,g9,b9","g4r5,r4y5,y4g5,b9","g3brrb3,r6gyy,y4g5,brbby3bb","g3yggy3,yrygr5,brbby3bb,b4g3rr","yryg3y3,brbbr5,g3y4bb,b4g3rr"},
-        {"turnLeft","rotateRightCornerUp","rotateUpperRight","rotateRightUp","rotateRightCornerDown","rotateUpperLeft"}
+        {OP_TURN_LEFT,OP_RIGHT_CORNER_UP,OP_UPPER_RIGHT,OP_RIGHT_UP,OP_RIGHT_CORNER_DOWN,OP_UPPER_LEFT}
     },
     /**
      *  Execute each operation once:
@@ -26,7 +26,7 @@ static const std::list<std::pair<std::list<std::string>,std::list<std::string>>>
     {
         {"b9,g9,y9,r9","gb8,yg8,by8,r9","gb7g,yg3rg4,by8,r4br4","gbbgbbggr,yrggbrrgg,by8,rbrrgbbrr","yrggbbggr,by3brrgg,gbbgy5,rbrrgbbrr","y3byygbg,gygrbyyrb,rbrrgbbrr,rg3ygrbb"
         ,"rbrrgbbrr,y3byygbg,gygrbyyrb,yrggbbggr","bgbrrg3y,ygyygbbyy,r3brrbbg,gygrbyyrb","r3brg3y,bgbrgbbyy,ygyyrrbbg,gygrbyyrb","r3yrgyyb,bgbrygbyy,ygyyrrbbg,g3rgbbrb","r3yrgyyg,bgbrbgbyy,ygyyrrbbg,g3rybbrb","yrryrgyyg,rgbrbgbyy,bgyyrrbbg,g3rybbrb","rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by"},
-        {"rotateTopLeft","rotateRightestDown","rotateRightDown","rotateUpperLeft","rotateRightCornerDown","turnRight","rotateRightCornerUp","rotateUpperRight","rotateRightUp","rotateRightestUp","rotateTopRight","turnLeft"}
+        {OP_TOP_LEFT,OP_RIGHTEST_DOWN,OP_RIGHT_DOWN,OP_UPPER_LEFT,OP_RIGHT_CORNER_DOWN,OP_TURN_RIGHT,OP_RIGHT_CORNER_UP,OP_UPPER_RIGHT,OP_RIGHT_UP,OP_RIGHTEST_UP,OP_TOP_RIGHT,OP_TURN_LEFT}
     }
 };
 
@@ -66,7 +66,7 @@ void runAllTests()
     std::cout << "Total test: " << t << ". Successful tests: " << success << ". Failures: " << failed << ". Skipped: " << skipped << "." << std::endl;
 }
 
-int runTestCase(const std::list<pyramid> &configs, const std::list<std::string> &ops)
+int runTestCase(const std::list<pyramid> &configs, const std::list<Operation> &ops)
 {
     if(ops.size() + 1 != configs.size())
         return 0;
