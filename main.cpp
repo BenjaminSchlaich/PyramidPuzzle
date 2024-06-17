@@ -8,18 +8,12 @@ using namespace std;
 
 int main()
 {
-    pyramid p("b9,g9,y9,r9");
-
-    cout << p << endl;
-
     // runAllTests();
-
-    /*
-
-    cout << endl << endl;
-
-    // pyramid p("yggrbrgry,byybrgyyr,grbbybygr,bgrbgyrbg");    
-    pyramid p("yryg3y3,brbbr5,g3y4bb,b4g3rr");
+    
+    // pyramid p("yggrbrgry,byybrgyyr,grbbybygr,bgrbgyrbg");
+    pyramid p("rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by");
+    // pyramid p("yryg3y3,brbbr5,g3y4bb,b4g3rr");
+    // pyramid p("b9,g9,y9,r9");
 
     std::list<std::string> solution;
 

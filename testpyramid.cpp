@@ -7,6 +7,26 @@ static const std::list<std::pair<std::list<std::string>,std::list<std::string>>>
     {
         {"b9,g9,y9,r9","g9,y9,b9,r9","r9,y9,g9,b9","g4r5,r4y5,y4g5,b9","g3brrb3,r6gyy,y4g5,brbby3bb","g3yggy3,yrygr5,brbby3bb,b4g3rr","yryg3y3,brbbr5,g3y4bb,b4g3rr"},
         {"turnLeft","rotateRightCornerUp","rotateUpperRight","rotateRightUp","rotateRightCornerDown","rotateUpperLeft"}
+    },
+    /**
+     *  Execute each operation once:
+     *  turnLeft
+     *  turnRight
+     *  rotateRightCornerUp
+     *  rotateRightCornerDown
+     *  rotateUpperRight
+     *  rotateUpperLeft
+     *  rotateRightUp
+     *  rotateRightDown
+     *  rotateRightestUp
+     *  rotateRightestDown
+     *  rotateTopRight
+     *  rotateTopLeft
+     * */
+    {
+        {"b9,g9,y9,r9","gb8,yg8,by8,r9","gb7g,yg3rg4,by8,r4br4","gbbgbbggr,yrggbrrgg,by8,rbrrgbbrr","yrggbbggr,by3brrgg,gbbgy5,rbrrgbbrr","y3byygbg,gygrbyyrb,rbrrgbbrr,rg3ygrbb"
+        ,"rbrrgbbrr,y3byygbg,gygrbyyrb,yrggbbggr","bgbrrg3y,ygyygbbyy,r3brrbbg,gygrbyyrb","r3brg3y,bgbrgbbyy,ygyyrrbbg,gygrbyyrb","r3yrgyyb,bgbrygbyy,ygyyrrbbg,g3rgbbrb","r3yrgyyg,bgbrbgbyy,ygyyrrbbg,g3rybbrb","yrryrgyyg,rgbrbgbyy,bgyyrrbbg,g3rybbrb","rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by"},
+        {"rotateTopLeft","rotateRightestDown","rotateRightDown","rotateUpperLeft","rotateRightCornerDown","turnRight","rotateRightCornerUp","rotateUpperRight","rotateRightUp","rotateRightestUp","rotateTopRight","turnLeft"}
     }
 };
 
@@ -34,7 +54,10 @@ void runAllTests()
         else if(status == 0)
             skipped++;
         else
+        {
             failed++;
+            std::cout << "Test case " << (t+1) << " failed." << std::endl;
+        }
         
         t++;
     }

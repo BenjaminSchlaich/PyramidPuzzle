@@ -10,9 +10,9 @@ const color BLUE = 2;
 const color YELLOW = 3;
 
 const unsigned int ALLRED = 0;
-const unsigned int ALLGREEN = 0x155;
-const unsigned int ALLBLUE = 0x2aa;
-const unsigned int ALLYELLOW = 0x3ff;
+const unsigned int ALLGREEN = 0x15555;
+const unsigned int ALLBLUE = 0x2aaaa;
+const unsigned int ALLYELLOW = 0x3ffff;
 
 static const std::list<std::string> solvingMoves = {
     "turnLeft",
@@ -165,6 +165,9 @@ surface::surface(std::string &s)
 
     while(is < s.length())
     {
+        if(i == 9)
+            throw std::runtime_error("surface::surface(string): more than 9 tiles in the input string: " + s);
+
         char c = s.at(is++);
 
         if(isnumber(c))
@@ -182,10 +185,11 @@ surface::surface(std::string &s)
                 // elements.at(i) = elements.at(i-1);
                 elements |= (0b11 & (elements >> 2));
 
-                if(i < 8)
+                i++;
+
+                if(i < 9)
                     elements <<= 2;
 
-                i++;
             }
         }
         else
@@ -213,10 +217,11 @@ surface::surface(std::string &s)
             }
 
             i++;
-        }
 
-        if(i < 9)
-            elements <<= 2;
+            if(i < 9)
+                elements <<= 2;
+            
+        }
     }
 
     if(i < 9)
@@ -407,12 +412,12 @@ void surface::setTop(color c)
 
 void surface::setLeftest(color c)
 {
-    setByMask(0b000000001100000000, c << 16);
+    setByMask(0b000000001100000000, c << 8);
 }
 
 void surface::setRightest(color c)
 {
-    setByMask(0b000000000000000011, c << 16);
+    setByMask(0b000000000000000011, c);
 }
 
 pyramid::pyramid(const pyramid &p) : front(p.front), left(p.left), right(p.right), bottom(p.bottom)
@@ -578,9 +583,9 @@ void pyramid::rotateRightestDown()
 void pyramid::rotateTopRight()
 {
     surface s(front);
-    front.setTop(left.getColors());
-    left.setTop(right.getColors());
-    right.setTop(s.getColors());
+    front.setTop(left.getTop());
+    left.setTop(right.getTop());
+    right.setTop(s.getTop());
 }
 
 void pyramid::rotateTopLeft()
