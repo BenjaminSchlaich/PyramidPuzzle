@@ -469,7 +469,44 @@ pyramid::pyramid(std::string sin) : front(0), right(0), left(0), bottom(0)
 
 bool pyramid::equal(const pyramid &p) const
 {
-    return p.bottom == bottom && p.front == front && p.left == left && p.right == right;
+    const unsigned int pf = p.front.getColors();
+    const unsigned int pr = p.right.getColors();
+    const unsigned int pl = p.left.getColors();
+    const unsigned int pb = p.bottom.getColors();
+
+    const unsigned int qf = front.getColors();
+    const unsigned int qr = right.getColors();
+    const unsigned int ql = left.getColors();
+    const unsigned int qb = bottom.getColors();
+
+    int p1 = std::popcount(pf);
+    int p2 = std::popcount(pr);
+    int p3 = std::popcount(pl);
+    int p4 = std::popcount(pb);
+
+    int q1 = std::popcount(qf);
+    int q2 = std::popcount(qr);
+    int q3 = std::popcount(ql);
+    int q4 = std::popcount(qb);
+
+    int s1 = p1+p2+p3+p4;
+    int s2 = q1+q2+q3+q4;
+
+    if(s1 != s2)
+        return false;
+    
+    int p1 = p1*p2*p3*p4;
+    int p2 = q1*q2*q3*q4;
+
+    if(p1 != p2)
+        return false;
+    
+    std::list<unsigned int> l1 = {pf,pr,pl,pb};
+    l1.sort();
+    std::list<unsigned int> l2 = {qf,qr,ql,qb};
+    l2.sort();
+
+    return l1 == l2;
 }
 
 bool pyramid::isSolved() const
