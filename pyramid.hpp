@@ -217,6 +217,9 @@ class pyramid
 
     surface getBottom() const;
 
+    /// saves this pyramid to a string that is of the format we read in the constructor from strings.
+    std::string storageString() const;
+
     private:
 
     surface front;

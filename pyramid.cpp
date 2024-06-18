@@ -19,14 +19,14 @@ Operation reverseOp(const Operation &op);
 
 // use these moves in the process of solving
 static const std::list<Operation> solvingMoves = {
-    OP_TURN_LEFT,
-    OP_TURN_RIGHT,
+    //OP_TURN_LEFT,
+    //OP_TURN_RIGHT,
     OP_RIGHT_CORNER_UP,
-    OP_RIGHT_CORNER_DOWN,
-    OP_UPPER_RIGHT,
+    //OP_RIGHT_CORNER_DOWN,
+    OP_UPPER_RIGHT/*,
     OP_UPPER_LEFT,
     OP_RIGHT_UP,
-    OP_RIGHT_DOWN
+    OP_RIGHT_DOWN//*/
 };
 
 void printColor(std::ostream &os, const color &c)
@@ -435,8 +435,9 @@ front(surface(frontColor)), left(surface(leftColor)), right(surface(rightColor))
     
 }
 
-pyramid::pyramid(std::string s) : front(0), right(0), left(0), bottom(0)
+pyramid::pyramid(std::string sin) : front(0), right(0), left(0), bottom(0)
 {
+    std::string s(sin);
     char delimiter = ',';
 
     size_t pos = 0;
@@ -446,7 +447,7 @@ pyramid::pyramid(std::string s) : front(0), right(0), left(0), bottom(0)
     while(s.size() > 0)
     {
         if(t == 4)
-            throw std::runtime_error("pyramid::pyramid(std::string): illegal input string has more than 4 surfaces.");
+            throw std::runtime_error("pyramid::pyramid(std::string): illegal input string has more than 4 surfaces: " + sin);
 
         pos = s.find(delimiter);
         tokens[t++] = s.substr(0, pos);
@@ -458,7 +459,7 @@ pyramid::pyramid(std::string s) : front(0), right(0), left(0), bottom(0)
     }
 
     if(t != 4)
-        throw std::runtime_error("pyramid::pyramid(std::string): illegal input string has less than 4 surfaces.");
+        throw std::runtime_error("pyramid::pyramid(std::string): illegal input string has less than 4 surfaces: " + sin);
 
     front = surface(tokens[0]);
     right = surface(tokens[1]);
@@ -500,6 +501,41 @@ surface pyramid::getLeft() const
 surface pyramid::getBottom() const
 {
     return bottom;
+}
+
+std::string pyramid::storageString() const
+{
+    std::string s = "";
+
+    constexpr auto convColor = [](const color c){
+        switch (c)
+        {
+            case RED: return 'r';
+            case GREEN: return 'g';
+            case BLUE: return 'b';
+            case YELLOW: return 'y';
+            default:
+                throw std::runtime_error("invalid color code: " + std::to_string(c));
+        }
+    };
+
+    auto sides = {front, right, left, bottom};
+    int i=0;
+
+    for(auto &side: sides)
+    {
+        for(int i=8; i>=0; i--)
+        {
+            color c = (side.getColors() >> 2*i) & 0b11;
+
+            s.push_back(convColor(c));
+        }
+
+        if(i++ < 3)
+            s.push_back(',');
+    }
+
+    return s;
 }
 
 void pyramid::turnLeft()
