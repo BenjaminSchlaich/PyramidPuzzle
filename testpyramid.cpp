@@ -22,11 +22,22 @@ static const std::list<std::pair<std::list<std::string>,std::list<Operation>>> t
      *  rotateRightestDown
      *  rotateTopRight
      *  rotateTopLeft
+     * 
+     *  added:
+     *  rotateLeftCornerUp
+     *  rotateLeftCornerDown
      * */
     {
-        {"b9,g9,y9,r9","gb8,yg8,by8,r9","gb7g,yg3rg4,by8,r4br4","gbbgbbggr,yrggbrrgg,by8,rbrrgbbrr","yrggbbggr,by3brrgg,gbbgy5,rbrrgbbrr","y3byygbg,gygrbyyrb,rbrrgbbrr,rg3ygrbb"
-        ,"rbrrgbbrr,y3byygbg,gygrbyyrb,yrggbbggr","bgbrrg3y,ygyygbbyy,r3brrbbg,gygrbyyrb","r3brg3y,bgbrgbbyy,ygyyrrbbg,gygrbyyrb","r3yrgyyb,bgbrygbyy,ygyyrrbbg,g3rgbbrb","r3yrgyyg,bgbrbgbyy,ygyyrrbbg,g3rybbrb","yrryrgyyg,rgbrbgbyy,bgyyrrbbg,g3rybbrb","rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by"},
-        {OP_TOP_LEFT,OP_RIGHTEST_DOWN,OP_RIGHT_DOWN,OP_UPPER_LEFT,OP_RIGHT_CORNER_DOWN,OP_TURN_RIGHT,OP_RIGHT_CORNER_UP,OP_UPPER_RIGHT,OP_RIGHT_UP,OP_RIGHTEST_UP,OP_TOP_RIGHT,OP_TURN_LEFT}
+        {"b9,g9,y9,r9","gb8,yg8,by8,r9","gb7g,yg3rg4,by8,r4br4","gbbgbbggr,yrggbrrgg,by8,rbrrgbbrr"
+        ,"yrggbbggr,by3brrgg,gbbgy5,rbrrgbbrr","y3byygbg,gygrbyyrb,rbrrgbbrr,rg3ygrbb","rbrrgbbrr,y3byygbg,gygrbyyrb,yrggbbggr"
+        ,"bgbrrg3y,ygyygbbyy,r3brrbbg,gygrbyyrb","r3brg3y,bgbrgbbyy,ygyyrrbbg,gygrbyyrb","r3yrgyyb,bgbrygbyy,ygyyrrbbg,g3rgbbrb"
+        ,"r3yrgyyg,bgbrbgbyy,ygyyrrbbg,g3rybbrb","yrryrgyyg,rgbrbgbyy,bgyyrrbbg,g3rybbrb","rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by"
+        ,"ybbgbrrgg,bbggyyrbr,gy4rrgr,bgyyrrbbg","rgbrbgbyy,bgyyrrbbg,yrryrgyyg,brrbg3by"},
+        {OP_TOP_LEFT,OP_RIGHTEST_DOWN,OP_RIGHT_DOWN
+        ,OP_UPPER_LEFT,OP_RIGHT_CORNER_DOWN,OP_TURN_RIGHT
+        ,OP_RIGHT_CORNER_UP,OP_UPPER_RIGHT,OP_RIGHT_UP
+        ,OP_RIGHTEST_UP,OP_TOP_RIGHT,OP_TURN_LEFT
+        ,OP_LEFT_CORNER_UP,OP_LEFT_CORNER_DOWN}
     }
 };
 

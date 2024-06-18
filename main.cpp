@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <list>
 #include <fstream>
 
@@ -134,39 +135,67 @@ void loadEdges(vector<list<size_t>> &g)
     ifs.close();
 }
 
+void generate(unordered_set<pyramid> &S)
+{
+    Operation ops[] =   {OP_UPPER_RIGHT,OP_UPPER_LEFT,OP_RIGHT_UP,OP_RIGHT_DOWN
+                        ,OP_LEFT_UP,OP_LEFT_DOWN,OP_BACK_CLOCKWISE,OP_BACK_COUNTER_CLOCKWISE};
+
+    S.clear();
+    S.insert(pyramid("b9,g9,y9,r9"));
+
+    std::cout << "starting the generation of pyramids..." << std::endl;
+
+    do
+    {
+        for(const pyramid &p: S)
+        {
+            if(p.marked)
+                continue;
+
+            bool marked = true;
+
+            for(Operation &op: ops)
+            {
+                pyramid pp(p);
+
+                executeOperation(pp, op);
+
+                if(!S.contains(pp))
+                {
+                    S.insert(pp);
+                    marked = false;
+                }
+            }
+
+            p.marked = marked;
+        }
+
+    } while(S.size() < 933120);
+    
+    cout << S.size() << " different pyramids were generated." << endl;
+
+    return;
+}
+
 int main()
 {
-    vector<pyramid> pyramids;
-    vector<list<size_t>> graph;
+    // runAllTests();
 
-    loadNodes(pyramids);
+    unordered_set<pyramid> ps;
 
-    loadEdges(graph);
+    generate(ps);
 
-    pyramid test("ryrgyyr3,b3yggygg,ybygrrgbb,brbryybgg");
-    test.turnRight();
-
-    vector<pyramid>::iterator spot;
-
-    if((spot = find(pyramids.begin(), pyramids.end(), test)) == pyramids.end())
-        cout << "Oh no, we're missing some." << endl;
-    else
-    {
-        size_t id = distance(pyramids.begin(), spot);
-        cout << "id: " << id << endl;
-
-        cout << "neighbors: " << endl;
-
-        cout << pyramids.at(graph.at(id).front()) << endl;
-        cout << pyramids.at(graph.at(id).back()) << endl;
-    }
-    
     return 0;
 }
 
-void build_graph(vector<pyramid> &nodes, vector<list<size_t>> &G)
+void build_graph(const vector<pyramid> &nodes, vector<list<size_t>> &G)
 {
-    list<Operation> searchOps = {OP_RIGHT_CORNER_UP, OP_UPPER_RIGHT};
+    list<Operation> searchOps = 
+                { OP_NOOP
+                , OP_TURN_LEFT, OP_TURN_RIGHT, OP_RIGHT_CORNER_UP, OP_RIGHT_CORNER_DOWN, OP_LEFT_CORNER_UP, OP_LEFT_CORNER_DOWN
+                , OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_LEFT_UP, OP_LEFT_DOWN, OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE
+                , OP_RIGHTEST_UP, OP_RIGHTEST_DOWN, OP_TOP_RIGHT, OP_TOP_LEFT};
+
     pyramid start("b9,g9,y9,r9");
     list<pyramid> q = {start};
 

@@ -13,9 +13,10 @@ extern const color BLUE;
 extern const color YELLOW;
 
 /// @brief These are the operations that can be executed
-enum Operation {OP_NOOP, OP_TURN_LEFT, OP_TURN_RIGHT, OP_RIGHT_CORNER_UP, OP_RIGHT_CORNER_DOWN,
-                OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_RIGHTEST_UP, OP_RIGHTEST_DOWN,
-                OP_TOP_RIGHT, OP_TOP_LEFT};
+enum Operation  { OP_NOOP
+                , OP_TURN_LEFT, OP_TURN_RIGHT, OP_RIGHT_CORNER_UP, OP_RIGHT_CORNER_DOWN, OP_LEFT_CORNER_UP, OP_LEFT_CORNER_DOWN
+                , OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_LEFT_UP, OP_LEFT_DOWN, OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE
+                , OP_RIGHTEST_UP, OP_RIGHTEST_DOWN, OP_TOP_RIGHT, OP_TOP_LEFT};
 
 /// print a color in just one letter
 void printColor(std::ostream &os, const color &c);
@@ -45,6 +46,9 @@ class surface
 
     /// checks if all face colors are equal
     bool equal(const surface &s) const;
+
+    /// computes a hash value for this surface, that is equal independent of the direction.
+    size_t computeHash() const noexcept;
 
     /// checks if the surface has one color only
     bool isSolved() const;
@@ -101,6 +105,8 @@ class surface
      *          4 5 6 7 8
      */
     unsigned int elements;
+
+    static const size_t hashWeights[];
 };
 
 class hashPyramid;
@@ -114,6 +120,9 @@ class pyramid
     friend class hashPyramid;
 
     public:
+
+    /// this is for graph-algorithms that find it useful
+    mutable bool marked = false;
 
     /// explicit copy constructor, that duplicates all memory from pointers too
     pyramid(const pyramid &p);
@@ -136,11 +145,14 @@ class pyramid
      */
     pyramid(std::string s);
 
-    /// checks whether all faces are equal
+    /// checkes whether p is exactly the same pyramid.
     bool equal(const pyramid &p) const;
 
-    /// default equality should also work?
-    bool operator==(const pyramid&) const = default;
+    /// checks whether p is the same pyramid up to whole rotations
+    bool equivalent(const pyramid &p) const;
+
+    /// equality by equivalence as defined above
+    bool operator==(const pyramid&p) const;
 
     /// checks if the cube is in some position where all faces have one color only
     bool isSolved() const;
@@ -171,12 +183,17 @@ class pyramid
      * Opposite movement of rotateRightCornerUp();
      */
     void rotateRightCornerDown();
-
-    /*
+    
+    /**
+     * Rotate the left corner up to the top, while keeping the right corner "fixed".
+     * I.e. rotate the pyramid along the axis that goes through the right corner and the center of the left surface
+     * in clockwise direction, when seen from the right corner.
+     */
     void rotateLeftCornerUp();
 
+    /// Opposite movement of rotateLeftCornerUp();
     void rotateLeftCornerDown();
-    */
+    
 
     // rotate the upper four elements towards the right (from above this is a counter-clockwise rotation)
     void rotateUpperRight();
@@ -195,18 +212,34 @@ class pyramid
      */
     void rotateRightDown();
 
-    /*
+    /** rotate the four elements on the lower-left part upwards, i.e.
+     * rotate them counter-clockwise seen from the left corner along the axis formed by the
+     * left corner and the center of the right surface.
+     */
     void rotateLeftUp();
 
+    /** rotate the four elements on the lower-left part downwards, i.e.
+     * rotate them clockwise seen from the left corner along the axis formed by the
+     * left corner and the center of the right surface.
+     */
     void rotateLeftDown();
-    */
+
+    /// rotate the back clockwise from the front perspective
+    void rotateBackClockwise();
+
+    /// rotate the back counter-clockwise from the front perspective
+    void rotateBackCounterClockwise();
     
+    /// rotate the right tip of the pyramid upwards
     void rotateRightestUp();
 
+    /// rotate the right tip of the pyramid downwards
     void rotateRightestDown();
 
+    /// rotate the top tip of the pyramid towards the right
     void rotateTopRight();
 
+    /// rotate the top tip of the pyramid towards the left
     void rotateTopLeft();
 
     surface getFront() const;
@@ -240,10 +273,27 @@ std::string operationToString(const Operation &op);
 /// hash a pyramid into a set or map of a standard container:
 struct hashPyramid
 {
+    static size_t computeHash(const pyramid &p) noexcept
+    {
+        /*
+        const unsigned int pf = p.front.getColors();
+        const unsigned int pr = p.right.getColors();
+        const unsigned int pl = p.left.getColors();
+        const unsigned int pb = p.bottom.getColors();
+
+        int p1 = std::popcount(pf);
+        int p2 = std::popcount(pr);
+        int p3 = std::popcount(pl);
+        int p4 = std::popcount(pb);
+
+        int x1 = p1*p2*p3*p4;
+
+        return x1;//*/
+        return p.front.computeHash() ^ p.right.computeHash() ^ p.left.computeHash() ^ p.bottom.computeHash();
+    }
+
     size_t operator()(const pyramid& p) const noexcept
     {
-        unsigned long l = (p.left.getColors() ^ p.right.getColors()) << 31;
-        unsigned long r = p.front.getColors() ^ p.bottom.getColors();
-        return l | r;
+        return p.front.computeHash() ^ p.right.computeHash() ^ p.left.computeHash() ^ p.bottom.computeHash();
     }
 };

@@ -19,15 +19,20 @@ Operation reverseOp(const Operation &op);
 
 // use these moves in the process of solving
 static const std::list<Operation> solvingMoves = {
-    //OP_TURN_LEFT,
-    //OP_TURN_RIGHT,
+    OP_TURN_LEFT,
+    OP_TURN_RIGHT,
     OP_RIGHT_CORNER_UP,
-    //OP_RIGHT_CORNER_DOWN,
-    OP_UPPER_RIGHT/*,
+    OP_RIGHT_CORNER_DOWN,
+    OP_UPPER_RIGHT,
     OP_UPPER_LEFT,
     OP_RIGHT_UP,
-    OP_RIGHT_DOWN//*/
+    OP_RIGHT_DOWN,
+    OP_LEFT_CORNER_UP,
+    OP_LEFT_CORNER_DOWN
 };
+
+const size_t surface::hashWeights[] = {3, 5, 7, 5, 3, 7, 5, 7, 3};
+static const size_t colorWeights[] = {11, 13, 17, 19};
 
 void printColor(std::ostream &os, const color &c)
 {
@@ -235,6 +240,24 @@ surface::surface(std::string &s)
 bool surface::equal(const surface &s) const
 {
     return elements == s.elements;
+}
+
+size_t surface::computeHash() const noexcept
+{
+    size_t hash = 1;
+    size_t s = elements;
+
+    for(int i=0; i<9; i++)
+    {
+        color c = s & 0b11;
+        s >>= 2;
+
+        size_t t = colorWeights[c] * hashWeights[i];
+
+        hash *= t;
+    }
+
+    return hash;
 }
 
 bool surface::isSolved() const
@@ -469,44 +492,39 @@ pyramid::pyramid(std::string sin) : front(0), right(0), left(0), bottom(0)
 
 bool pyramid::equal(const pyramid &p) const
 {
-    const unsigned int pf = p.front.getColors();
-    const unsigned int pr = p.right.getColors();
-    const unsigned int pl = p.left.getColors();
-    const unsigned int pb = p.bottom.getColors();
+    return p.front == front && p.right == right && p.left == left && p.bottom == bottom;
+}
 
-    const unsigned int qf = front.getColors();
-    const unsigned int qr = right.getColors();
-    const unsigned int ql = left.getColors();
-    const unsigned int qb = bottom.getColors();
-
-    int p1 = std::popcount(pf);
-    int p2 = std::popcount(pr);
-    int p3 = std::popcount(pl);
-    int p4 = std::popcount(pb);
-
-    int q1 = std::popcount(qf);
-    int q2 = std::popcount(qr);
-    int q3 = std::popcount(ql);
-    int q4 = std::popcount(qb);
-
-    int s1 = p1+p2+p3+p4;
-    int s2 = q1+q2+q3+q4;
-
-    if(s1 != s2)
+bool pyramid::equivalent(const pyramid &p) const
+{
+    if(hashPyramid::computeHash(*this) != hashPyramid::computeHash(p))
         return false;
     
-    int p1 = p1*p2*p3*p4;
-    int p2 = q1*q2*q3*q4;
-
-    if(p1 != p2)
-        return false;
+    // there was no obvious difference, so now we must go through all orientations and search if they are equal
+    pyramid pp(p);
     
-    std::list<unsigned int> l1 = {pf,pr,pl,pb};
-    l1.sort();
-    std::list<unsigned int> l2 = {qf,qr,ql,qb};
-    l2.sort();
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<3; j++)
+        {
+            if(equal(pp))
+                return true;
+            
+            pp.turnLeft();
+        }
 
-    return l1 == l2;
+        if(i < 3)
+            pp.rotateRightCornerUp();
+        else
+            pp.rotateLeftCornerUp();
+    }
+
+    return false;
+}
+
+bool pyramid::operator==(const pyramid &p) const
+{
+    return equivalent(p);
 }
 
 bool pyramid::isSolved() const
@@ -619,6 +637,25 @@ void pyramid::rotateRightCornerDown()
     bottom = s;
 }
 
+void pyramid::rotateLeftCornerUp()
+{
+    front.rotateClockwise();
+    left.rotateCounterClockwise();
+    bottom.rotateCounterClockwise();
+
+    surface s = front;
+    front = bottom;
+    bottom = right;
+    right = s;
+}
+
+void pyramid::rotateLeftCornerDown()
+{
+    // TODO: implement properly
+    rotateLeftCornerUp();
+    rotateLeftCornerUp();
+}
+
 void pyramid::rotateUpperRight()
 {
     surface s(front);
@@ -661,6 +698,38 @@ void pyramid::rotateRightDown()
 
     s.rotateClockwise();
     bottom.setLeft(s.getColors());
+}
+
+void pyramid::rotateLeftUp()
+{
+    // TODO: implement this properly
+    turnRight();
+    rotateRightDown();
+    turnLeft();
+}
+
+void pyramid::rotateLeftDown()
+{
+    // TODO: implement this properly
+    turnRight();
+    rotateRightUp();
+    turnLeft();
+}
+
+void pyramid::rotateBackClockwise()
+{
+    // TODO: implement this properly
+    turnLeft();
+    rotateRightDown();
+    turnRight();
+}
+
+void pyramid::rotateBackCounterClockwise()
+{
+    // TODO: implement this properly
+    turnLeft();
+    rotateRightUp();
+    turnRight();
 }
 
 void pyramid::rotateRightestUp()
@@ -777,6 +846,12 @@ void executeOperation(pyramid &p, Operation op)
         case OP_RIGHT_CORNER_DOWN:
             p.rotateRightCornerDown();
             break;
+        case OP_LEFT_CORNER_UP:
+            p.rotateLeftCornerUp();
+            break;
+        case OP_LEFT_CORNER_DOWN:
+            p.rotateLeftCornerDown();
+            break;
         case OP_UPPER_RIGHT:
             p.rotateUpperRight();
             break;
@@ -788,6 +863,18 @@ void executeOperation(pyramid &p, Operation op)
             break;
         case OP_RIGHT_DOWN:
             p.rotateRightDown();
+            break;
+        case OP_LEFT_UP:
+            p.rotateLeftUp();
+            break;
+        case OP_LEFT_DOWN:
+            p.rotateLeftDown();
+            break;
+        case OP_BACK_CLOCKWISE:
+            p.rotateBackClockwise();
+            break;
+        case OP_BACK_COUNTER_CLOCKWISE:
+            p.rotateBackCounterClockwise();
             break;
         case OP_RIGHTEST_UP:
             p.rotateRightestUp();
@@ -802,7 +889,7 @@ void executeOperation(pyramid &p, Operation op)
             p.rotateTopRight();
             break;
         default:
-            throw std::runtime_error("executeOperation(): unknown operation " + std::to_string(op));
+            throw std::runtime_error("executeOperation(): unknown operation: " + operationToString(op));
     }   
     
     #if DEBUG
@@ -838,6 +925,18 @@ std::string operationToString(const Operation &op)
         case OP_RIGHT_DOWN:
             return "Rotate the right section downwards.";
             break;
+        case OP_LEFT_UP:
+            return "Rotate the left section upwards.";
+            break;
+        case OP_LEFT_DOWN:
+            return "Rotate the left section downwards.";
+            break;
+        case OP_BACK_CLOCKWISE:
+            return "Rotate the back section clockwise from the front perspective.";
+            break;
+        case OP_BACK_COUNTER_CLOCKWISE:
+            return "Rotate the right section counter-clockwise from the front perspective.";
+            break;
         case OP_RIGHTEST_UP:
             return "Rotate the right corner upwards.";
             break;
@@ -853,7 +952,7 @@ std::string operationToString(const Operation &op)
         case OP_NOOP:
             return "Don't do anything.";
         default:
-            throw std::runtime_error("executeOperation(): unknown operation " + std::to_string(op));
+            throw std::runtime_error("operationToString(): unknown operation " + std::to_string(op));
     }
 }
 
