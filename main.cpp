@@ -81,9 +81,41 @@ void solverLoop()
     return;
 }
 
+// find the rotations so that p0 becomes p1
+void findRotation(const pyramid &p0, const pyramid &p1, list<Operation> &solution);
+
+// find the Operation that turns p0 into p1
+Operation findOperation(const pyramid &p0, const pyramid &p1);
+
+// solve the problem using the precomputed graph.
+void bfsSolve(const vector<pyramid> &ps, const vector<list<size_t>> g, list<Operation> &solution, const pyramid &inst);
+
 int main()
 {
-    
+    ///*
+    solverLoop();
+    /*/
+    vector<pyramid> ps;
+
+    loadNodes(ps);
+
+    vector<list<size_t>> g;
+
+    loadEdges(g);
+
+    list<Operation> solution;
+
+    pyramid problem("b9,g9,y9,r9");
+
+    // problem.turnLeft();
+    problem.rotateRightUp();
+    problem.rotateLeftDown();
+    problem.rotateTopLeft();
+
+    bfsSolve(ps, g, solution, problem);
+
+    for(Operation op: solution)
+        cout << operationToString(op) << endl;//*/
 }
 
 void findEdges(vector<pyramid> &ps, vector<list<size_t>> &G)
@@ -259,6 +291,8 @@ void loadNodes(vector<pyramid> &ps)
     }
 
     ifs.close();
+
+    cout << ps.size() << " nodes were loaded successfuly." << endl;
 }
 
 void loadEdges(vector<list<size_t>> &g)
@@ -279,11 +313,146 @@ void loadEdges(vector<list<size_t>> &g)
 
         if(ifs.eof())                   // there is one last newline which leads to an empty string that cannot be parsed.
             break;
+        else
+            g.push_back({});
 
-        size_t comma = s.find(',');     // this should never return npos, as there always are two rotational neighbors
-        
-        g.push_back({stoul(s.substr(0, comma)), stoul(s.substr(comma+1, s.length() - comma + 1))});
+        const char delimiter = ',';
+
+        size_t pos = 0;
+        vector<string> tokens;
+
+        while(s.size() > 0)
+        {
+            pos = s.find(delimiter);
+            tokens.push_back(s.substr(0, pos));
+
+            if(pos == std::string::npos)
+                break;
+            else
+                s.erase(0, pos + 1);
+        }
+
+        for(string &t: tokens)
+            g.back().push_back(stoul(t));
     }
 
     ifs.close();
+
+    cout << "loaded a graph with " << g.size() << " nodes." << endl;
+}
+
+void bfsSolve(const vector<pyramid> &ps, const vector<list<size_t>> g, list<Operation> &solution, const pyramid &inst)
+{
+    solution.clear();
+
+    // trivial check:
+    if(inst.isSolved())
+    {
+        solution.push_back(OP_NOOP);    // because an empty solution means that no solution was found, which isn't the case.
+        return;
+    }
+
+    // first, let's find the right starting point, and also reset the marked flags
+    size_t startID = -1;
+
+    for(size_t id=0; id<ps.size(); id++)
+    {
+        if(ps.at(id) == inst)
+            startID = id;
+        
+        ps.at(id).marked = false;
+    }
+    
+    if(startID == -1)
+    {
+        cout << "The right entry point was not found!" << endl;
+        return;
+    }
+
+    ps.at(startID).marked = true;
+
+    // so we have everything in order later for backtracking
+    list<Operation> rotationSolution;
+    
+    // turn the pyramid, so that it becomes exactly the one in the graph.
+    if(!inst.equal(ps.at(startID)))
+        findRotation(inst, ps.at(startID), rotationSolution);
+
+    // bfs queue
+    list<size_t> q;
+    q.push_back(startID);
+
+    // bfs predecessor array
+    vector<size_t> pred(ps.size());
+    pred.at(startID) = startID;
+
+    // solution target:
+    const pyramid target("b9,g9,y9,r9");
+    bool solved = false;
+
+    while(!(solved || q.empty()))
+    {
+        size_t uID = q.front();
+        q.pop_front();
+
+        for(size_t vID: g.at(uID))      // iterate over all neighbors
+        {
+            const pyramid &v = ps.at(vID);
+
+            if(v.marked)                // was visited before, skip.
+                continue;
+            
+            v.marked = true;            // mark the previously unknown node
+            pred.at(vID) = uID;         // set u to be the predecessor of v
+            q.push_back(vID);           // and add v to the queue
+            
+            if(v == target)             // we've found the solution!
+            {
+                solved = true;
+                break;
+            }
+
+            q.push_back(vID);           // add unknown node to the queue
+        }
+    }
+
+    if(q.empty())
+    {
+        cout << "No solution was found!" << endl;
+        return;
+    }
+    
+    // do all of the backtracking
+    size_t pID = q.back();
+
+    while(pID != startID)
+    {
+        const pyramid &p1 = ps.at(pID);
+        pID = pred.at(pID);
+        const pyramid &p0 = ps.at(pID);
+        solution.push_back(findOperation(p0, p1));
+    }
+
+    for(Operation rot: rotationSolution)
+        solution.push_front(rot);
+}
+
+void findRotation(const pyramid &p0, const pyramid &p1, list<Operation> &solution)
+{
+    cout << "Rotate " << p0 << " so that it becomes " << p1 << endl;
+}
+
+Operation findOperation(const pyramid &p0, const pyramid &p1)
+{
+    for(Operation op: allOperations)
+    {
+        pyramid p(p0);
+
+        executeOperation(p, op);
+
+        if(p.equal(p1))
+            return op;
+    }
+
+    throw runtime_error("findOperation(): no operation turns '" + p0.storageString() + "' into '" + p1.storageString() + "'.");
 }

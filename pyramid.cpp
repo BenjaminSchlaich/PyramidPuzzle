@@ -14,6 +14,12 @@ const unsigned int ALLGREEN = 0x15555;
 const unsigned int ALLBLUE = 0x2aaaa;
 const unsigned int ALLYELLOW = 0x3ffff;
 
+const std::list<Operation> allOperations =
+                { OP_NOOP
+                , OP_TURN_LEFT, OP_TURN_RIGHT, OP_RIGHT_CORNER_UP, OP_RIGHT_CORNER_DOWN, OP_LEFT_CORNER_UP, OP_LEFT_CORNER_DOWN
+                , OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_LEFT_UP, OP_LEFT_DOWN, OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE
+                , OP_RIGHTEST_UP, OP_RIGHTEST_DOWN, OP_TOP_RIGHT, OP_TOP_LEFT};
+
 // because we want to avoid the reversed operations when solving one after another
 Operation reverseOp(const Operation &op);
 
@@ -856,6 +862,8 @@ void executeOperation(pyramid &p, Operation op)
 {
     switch(op)
     {
+        case OP_NOOP:
+            break;
         case OP_TURN_LEFT:
             p.turnLeft();
             break;

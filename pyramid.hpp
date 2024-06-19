@@ -18,6 +18,8 @@ enum Operation  { OP_NOOP
                 , OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_LEFT_UP, OP_LEFT_DOWN, OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE
                 , OP_RIGHTEST_UP, OP_RIGHTEST_DOWN, OP_TOP_RIGHT, OP_TOP_LEFT};
 
+extern const std::list<Operation> allOperations;
+
 /// print a color in just one letter
 void printColor(std::ostream &os, const color &c);
 
