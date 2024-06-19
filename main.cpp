@@ -46,9 +46,37 @@ void loadEdges(vector<list<size_t>> &g);
 
 int main()
 {
-    // generateNodes();
+    while(true)
+    {
+        cout << "Enter pyramid puzzle instance (or type 'exit' to exit): ";
+        string s;
+        getline(cin, s);
 
-    testSolve();
+        if(s == "exit")
+            return 0;
+        
+        try
+        {
+            pyramid p(s);
+
+            list<Operation> solution;
+
+            if(solve(p, solution))
+            {
+                cout << "The puzzle was solved like so:" << endl << endl;
+
+                for(auto &move: solution)
+                    std::cout << operationToString(move) << endl << endl;
+            }
+            else
+                cout << "The puzzle could not be solved." << endl;
+        }
+        catch(const std::exception& e)
+        {
+            cout << "An error occurred when trying to solve your problem:" << endl;
+            std::cerr << e.what() << endl << endl;
+        }
+    }
 
     return 0;
 }

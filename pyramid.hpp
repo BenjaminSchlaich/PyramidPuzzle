@@ -56,6 +56,9 @@ class surface
     /// checks if the surface is solved apart from the corners
     bool isSolvedButCorners() const;
 
+    /// checks if the tips are solved
+    bool isSolvedCorners() const;
+
     /// do a clockwise rotation
     void rotateClockwise();
 
@@ -159,6 +162,9 @@ class pyramid
 
     /// checks if the cube is solved apart from the corners
     bool isSolvedButCorners() const;
+
+    /// checks if the tips are solved
+    bool isSolvedCorners() const;
 
     /**
      * Rotate the whole pyramid from the right to the left.

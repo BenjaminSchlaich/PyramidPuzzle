@@ -273,6 +273,29 @@ bool surface::isSolvedButCorners() const
             || mels == (ALLYELLOW & mask);
 }
 
+bool surface::isSolvedCorners() const
+{
+    color upperCorner = elements >> 16;
+    color upper = (elements >> 12) & 0b11;
+
+    if(upper != upperCorner)
+        return false;
+
+    color rightCorner = elements & 0b11;
+    color right = (elements >> 2) & 0b11;
+
+    if(right != rightCorner)
+        return false;
+
+    color leftCorner = (elements >> 8) & 0b11;
+    color left = (elements >> 6) & 0b11;
+
+    if(left != leftCorner)
+        return false;
+
+    return true;
+}
+
 void surface::rotateClockwise()
 {
     // code generated here for bit permutation: https://programming.sirrida.de/calcperm.php
@@ -530,6 +553,11 @@ bool pyramid::isSolvedButCorners() const
 {
     return front.isSolvedButCorners() && right.isSolvedButCorners()
             && left.isSolvedButCorners() && bottom.isSolvedButCorners();
+}
+
+bool pyramid::isSolvedCorners() const
+{
+    return front.isSolvedCorners() && right.isSolvedCorners();
 }
 
 surface pyramid::getFront() const
