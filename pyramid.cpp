@@ -19,16 +19,10 @@ Operation reverseOp(const Operation &op);
 
 // use these moves in the process of solving
 static const std::list<Operation> solvingMoves = {
-    OP_TURN_LEFT,
-    OP_TURN_RIGHT,
-    OP_RIGHT_CORNER_UP,
-    OP_RIGHT_CORNER_DOWN,
-    OP_UPPER_RIGHT,
-    OP_UPPER_LEFT,
-    OP_RIGHT_UP,
-    OP_RIGHT_DOWN,
-    OP_LEFT_CORNER_UP,
-    OP_LEFT_CORNER_DOWN
+    OP_UPPER_RIGHT, OP_UPPER_LEFT,
+    OP_RIGHT_UP, OP_RIGHT_DOWN,
+    OP_LEFT_UP, OP_LEFT_DOWN,
+    OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE
 };
 
 const size_t surface::hashWeights[] = {3, 5, 7, 5, 3, 7, 5, 7, 3};
@@ -935,7 +929,7 @@ std::string operationToString(const Operation &op)
             return "Rotate the back section clockwise from the front perspective.";
             break;
         case OP_BACK_COUNTER_CLOCKWISE:
-            return "Rotate the right section counter-clockwise from the front perspective.";
+            return "Rotate the back section counter-clockwise from the front perspective.";
             break;
         case OP_RIGHTEST_UP:
             return "Rotate the right corner upwards.";
@@ -984,6 +978,18 @@ Operation reverseOp(const Operation &op)
         case OP_RIGHT_DOWN:
             return OP_RIGHT_UP;
             break;
+        case OP_LEFT_UP:
+            return OP_LEFT_DOWN;
+            break;
+        case OP_LEFT_DOWN:
+            return OP_LEFT_UP;
+            break;
+        case OP_BACK_CLOCKWISE:
+            return OP_BACK_COUNTER_CLOCKWISE;
+            break;
+        case OP_BACK_COUNTER_CLOCKWISE:
+            return OP_BACK_CLOCKWISE;
+            break;
         case OP_RIGHTEST_UP:
             return OP_RIGHTEST_DOWN;
             break;
@@ -999,6 +1005,6 @@ Operation reverseOp(const Operation &op)
         case OP_NOOP:
             return OP_NOOP;
         default:
-            throw std::runtime_error("executeOperation(): unknown operation " + std::to_string(op));
+            throw std::runtime_error("reverseOp(): unknown operation " + std::to_string(op));
     }
 }
