@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void build_graph(vector<pyramid> &nodes, vector<list<size_t>> &G);
+void findEdges(vector<pyramid> &nodes, vector<list<size_t>> &G);
 
 void testSolve()
 {
@@ -44,7 +44,7 @@ void loadNodes(vector<pyramid> &ps);
 
 void loadEdges(vector<list<size_t>> &g);
 
-int main()
+void solverLoop()
 {
     while(true)
     {
@@ -53,7 +53,7 @@ int main()
         getline(cin, s);
 
         if(s == "exit")
-            return 0;
+            return;
         
         try
         {
@@ -78,24 +78,31 @@ int main()
         }
     }
 
-    return 0;
+    return;
 }
 
-void build_graph(vector<pyramid> &ps, vector<list<size_t>> &G)
+int main()
+{
+    
+}
+
+void findEdges(vector<pyramid> &ps, vector<list<size_t>> &G)
 {
     cout << "build_graph()..." << endl;
 
-    list<Operation> ops = 
-                { OP_TURN_LEFT, OP_TURN_RIGHT, OP_RIGHT_CORNER_UP, OP_RIGHT_CORNER_DOWN, OP_LEFT_CORNER_UP, OP_LEFT_CORNER_DOWN
-                , OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN, OP_LEFT_UP, OP_LEFT_DOWN, OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE
-                , OP_RIGHTEST_UP, OP_RIGHTEST_DOWN, OP_TOP_RIGHT, OP_TOP_LEFT};
+    list<Operation> ops =   { OP_UPPER_RIGHT, OP_UPPER_LEFT, OP_RIGHT_UP, OP_RIGHT_DOWN
+                            , OP_LEFT_UP, OP_LEFT_DOWN, OP_BACK_CLOCKWISE, OP_BACK_COUNTER_CLOCKWISE };
+
+    cout << "loading the nodes from file..." << endl;
 
     loadNodes(ps);
+
+    cout << "loaded " << ps.size() << " nodes." << endl;
 
     unordered_map<pyramid, size_t, hashPyramid> trans;  // translate pyramids into ids.
     size_t id = 0;
 
-    cout << "building a translation table and vectorizing the pyramids..." << endl;
+    cout << "building a translation table..." << endl;
 
     for(const pyramid &p: ps)
         trans.insert({p, id++});
@@ -118,17 +125,8 @@ void build_graph(vector<pyramid> &ps, vector<list<size_t>> &G)
 
             executeOperation(p, op);
 
-            try
-            {
-                size_t pID = trans.at(p);
-                G.at(id).push_back(pID);
-            }
-            catch(out_of_range e)
-            {
-                cout << e.what() << endl;
-                cout << "pyramid that makes trouble: " << u.storageString() << endl;
-                exit(EXIT_FAILURE);
-            }
+            size_t pID = trans.at(p);
+            G.at(id).push_back(pID);
         }
 
         if(id > lastNotification + percent)
@@ -193,6 +191,8 @@ void generateNodes()
     
     savefile.close();
 
+    cout << "saved all pyramids." << endl;
+
     return;
 }
 
@@ -203,16 +203,14 @@ void generateEdges()
     vector<pyramid> nodes;
     vector<list<size_t>> edges;
 
-    build_graph(nodes, edges);
+    findEdges(nodes, edges);
 
-    cout << "In total there are " << nodes.size() << " pyramides." << endl;
-    
     ofstream edgesfile("edges.txt");
 
     if(!edgesfile.good())
         throw runtime_error("Could not open file to store finished pyramid nodes.");
     
-    cout << "Saving the edges to file." << endl;
+    cout << "saving the edges to file..." << endl;
 
     for(auto &l: edges)
     {
@@ -232,7 +230,7 @@ void generateEdges()
     
     edgesfile.close();
 
-    cout << "Everything saved and closed." << endl;
+    cout << "everything saved and closed." << endl;
 
     return;
 }
