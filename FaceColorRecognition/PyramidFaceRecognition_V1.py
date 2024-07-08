@@ -1,8 +1,15 @@
+import os
 import cv2
 import numpy as np
 
+# Get current directory 
+current_directory = os.path.dirname(__file__)
+
 # Load the image
-image = cv2.imread('Pyramid_img1.jpg')
+file_name = 'Pyramid_img1.jpg'
+file_path = os.path.join(current_directory, file_name)
+image = cv2.imread(file_path)
+
 
 # Convert to grayscale
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -28,6 +35,9 @@ for contour in contours:
         cv2.drawContours(image, [approx], 0, (0, 255, 0), 3)
 
 # Display the result
-cv2.imshow('Detected Triangular Faces', image)
+window1 = "Image with Triangle Detection"
+cv2.namedWindow(window1, cv2.WINDOW_NORMAL)
+cv2.resizeWindow(window1, 600, 600)
+cv2.imshow(window1, image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
