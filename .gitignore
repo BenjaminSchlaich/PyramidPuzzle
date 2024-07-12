@@ -1,3 +1,4 @@
 .vscode/**
 pp.dSYM/**
 pp
+.DS_Store
