@@ -1,5 +1,4 @@
 
-
 #include "pyramid.hpp"
 
 #include <unordered_map>

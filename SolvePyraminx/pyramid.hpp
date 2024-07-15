@@ -159,10 +159,10 @@ class pyramid
     /// equality by equivalence as defined above
     bool operator==(const pyramid&p) const;
 
-    /// checks if the cube is in some position where all faces have one color only
+    /// checks if the pyramid is in some position where all faces have one color only
     bool isSolved() const;
 
-    /// checks if the cube is solved apart from the corners
+    /// checks if the pyramid is solved apart from the corners
     bool isSolvedButCorners() const;
 
     /// checks if the tips are solved
